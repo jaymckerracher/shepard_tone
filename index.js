@@ -62,13 +62,15 @@ function transitionWaves() {
         // start transition to next values
         oscObj.osc.frequency.exponentialRampToValueAtTime(
             nextFreq,
-            audioCtx.currentTime + 9.9
+            audioCtx.currentTime + 10
         );
 
         oscObj.gainNode.gain.linearRampToValueAtTime(
             nextGain,
-            audioCtx.currentTime + 9.9
+            audioCtx.currentTime + 10
         );
+
+        console.log(`These are the frequencies: ${oscObj.osc.frequency.value}`);
     }
 
     intervalId = setTimeout(() => {
@@ -76,16 +78,25 @@ function transitionWaves() {
     }, 10000);
 }
 
-// adding start stop button event
-const button = document.querySelector("button");
-button.addEventListener("click", () => {
+// function to print numbers
+function showNums() {
+    for (const oscObj of oscillators) {
+        const oscFreqVal = oscObj.osc.frequency.value;
+        console.log((oscFreqVal / HIGHEST_FREQ) * 100);
+    }
+
+    setTimeout(showNums, 1000)
+}
+
+// function to handle start/stop button click
+function handleClick(e) {
     if (audioCtx.state === "suspended") {
         audioCtx.resume();
     }
 
-    if (button.innerText == "Start") {
-        button.innerText = "Stop";
-
+    // on start
+    if (e.target.innerText == "Start") {
+        e.target.innerText = "Stop";
         oscillators = createManyOscObjects(LOWEST_FREQ, NUM_OF_WAVES);
         
         for (const oscObj of oscillators) {
@@ -95,11 +106,19 @@ button.addEventListener("click", () => {
         }
 
         setTimeout(transitionWaves, 100);
-    } else {
-        button.innerText = "Start";
+        showNums();
+    }
+    // on stop
+    else {
+        e.target.innerText = "Start";
         for (const oscObj of oscillators) oscObj.osc.stop();
         oscillators = [];
         clearTimeout(intervalId);
         intervalId = null;
     }
-});
+}
+
+// adding start stop button event
+const button = document.querySelector("button");
+
+button.addEventListener("click", handleClick);
