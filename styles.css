@@ -1,7 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates&family=Tac+One&display=swap');
+
 *, *::before, *::after {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+
+    font-family: "Montserrat Alternates", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+:root {
+    --off-white: #f5f5f5;
+    --blue: #292c7b;
 }
 
 body {
@@ -9,17 +20,74 @@ body {
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    background-color: green;
+
+    padding: 75px;
+
+    background-color: var(--off-white);
 }
 
 h1 {
-    border: solid red 1px;
+    font-family: "Tac One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 5em;
 }
 
 .node-container {
-    width: 50%;
-    margin: 5%;
-    padding: 5%;
-    border: solid red 2px;
     flex: 1;
+    width: 900px;
+
+    box-sizing: content-box;
+
+    margin: 50px;
+
+    border: double black 10px;
+    border-radius: 75px;
+
+    background-color: white;
+
+    position: relative;
+}
+
+.node {
+    position: absolute;
+    background-color: black;
+    width: 50px;
+    aspect-ratio: 1 / 1;
+    border: double black 6px;
+    border-radius: 100px;
+}
+
+i.material-icons {
+    font-size: 56px;
+    color: white;
+    transition: all ease-in-out 200ms;
+}
+
+.start-stop-button {
+    padding: 15px;
+    border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+
+    border-radius: 50px;
+
+    background-color: var(--blue);
+    cursor: pointer;
+
+    transition: all ease-in-out 200ms;
+}
+
+.button-red {
+    background-color: red;
+}
+
+.start-stop-button:hover {
+    transform: scale(0.9);
+}
+
+.start-stop-button:hover i.material-icons {
+    transform: scale(1.5);
 }

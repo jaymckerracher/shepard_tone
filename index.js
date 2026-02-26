@@ -7,14 +7,57 @@ frequencyMap.set(880, 0.75);
 frequencyMap.set(1760, 0.5);
 frequencyMap.set(3520, 0.25);
 
+// colors for visual nodes
+const visualNodeColours = [
+    "#ffcbe1",
+    "#d6e5bd",
+    "#f9e1a8",
+    "#bcd8ec",
+    "#dcccec",
+    "#ffdab4"
+]
+
 // creating variables
 const audioCtx = new AudioContext();
 let oscillators = [];
 let intervalId = null;
+const startStopButton = document.querySelector(".start-stop-button");
+const startStopIcon = document.querySelector("i.material-icons");
+
 const LOWEST_FREQ = 110;
 const NUM_OF_WAVES = 6;
 const MID_VALUE = 440;
 const HIGHEST_FREQ = LOWEST_FREQ * 2 ** NUM_OF_WAVES;
+
+const NUM_OF_VISUAL_NODES = NUM_OF_WAVES;
+const NUM_OF_SPACES = NUM_OF_VISUAL_NODES;
+const DISPLAY_WIDTH = 900;
+const VISUAL_NODE_WIDTH = 50;
+const SPACE_WIDTH = (DISPLAY_WIDTH - VISUAL_NODE_WIDTH * NUM_OF_VISUAL_NODES) / NUM_OF_SPACES;
+const VISUAL_NODES_STARTING_Y = "5%";
+const VISUAL_NODES = createVisualNodes();
+
+// function to create visual nodes in DOM
+function createVisualNodes() {
+    const nodes = [];
+
+    const nodeContainer = document.querySelector(".node-container");
+
+    for (let i=0; i<NUM_OF_VISUAL_NODES; i++) {
+        const position = (SPACE_WIDTH / 2) + (i * VISUAL_NODE_WIDTH) + (i * SPACE_WIDTH);
+
+        const node = document.createElement("div");
+        node.classList.add("node");
+        node.style.backgroundColor = visualNodeColours[i];
+        node.style.left = position + "px";
+        node.style.bottom = VISUAL_NODES_STARTING_Y;
+
+        nodeContainer.appendChild(node);
+        nodes.push(node);
+    }
+
+    return nodes;
+}
 
 // function to create oscillator
 function createOscillator(freq) {
@@ -62,15 +105,13 @@ function transitionWaves() {
         // start transition to next values
         oscObj.osc.frequency.exponentialRampToValueAtTime(
             nextFreq,
-            audioCtx.currentTime + 10
+            audioCtx.currentTime + 9.9
         );
 
         oscObj.gainNode.gain.linearRampToValueAtTime(
             nextGain,
-            audioCtx.currentTime + 10
+            audioCtx.currentTime + 9.9
         );
-
-        console.log(`These are the frequencies: ${oscObj.osc.frequency.value}`);
     }
 
     intervalId = setTimeout(() => {
@@ -78,25 +119,36 @@ function transitionWaves() {
     }, 10000);
 }
 
-// function to print numbers
-function showNums() {
-    for (const oscObj of oscillators) {
-        const oscFreqVal = oscObj.osc.frequency.value;
-        console.log((oscFreqVal / HIGHEST_FREQ) * 100);
+// function to obtain new visual node y position
+function updateVisualNodeValues() {
+    for (let i=0; i<oscillators.length; i++) {
+        const oscFreqVal = oscillators[i].osc.frequency.value;
+        const oscGain = oscillators[i].gainNode.gain.value;
+        
+        const newYVal = (5 + (oscFreqVal / HIGHEST_FREQ) * 80) + "%";
+
+        const newOpacityVal = oscGain;
+
+        VISUAL_NODES[i].style.bottom = newYVal;
+        VISUAL_NODES[i].style.opacity = newOpacityVal;
     }
 
-    setTimeout(showNums, 1000)
+
+    setTimeout(updateVisualNodeValues, 100);
 }
 
 // function to handle start/stop button click
-function handleClick(e) {
+function handleClick() {
     if (audioCtx.state === "suspended") {
         audioCtx.resume();
     }
 
     // on start
-    if (e.target.innerText == "Start") {
-        e.target.innerText = "Stop";
+    if (startStopButton.dataset.playing == "false") {
+        startStopButton.dataset.playing = "true";
+        startStopButton.classList.toggle("button-red");
+        startStopIcon.innerText = "pause";
+
         oscillators = createManyOscObjects(LOWEST_FREQ, NUM_OF_WAVES);
         
         for (const oscObj of oscillators) {
@@ -106,11 +158,14 @@ function handleClick(e) {
         }
 
         setTimeout(transitionWaves, 100);
-        showNums();
+        updateVisualNodeValues();
     }
     // on stop
     else {
-        e.target.innerText = "Start";
+        startStopButton.dataset.playing = "false";
+        startStopButton.classList.toggle("button-red");
+        startStopIcon.innerText = "play_arrow";
+
         for (const oscObj of oscillators) oscObj.osc.stop();
         oscillators = [];
         clearTimeout(intervalId);
@@ -119,6 +174,4 @@ function handleClick(e) {
 }
 
 // adding start stop button event
-const button = document.querySelector("button");
-
-button.addEventListener("click", handleClick);
+startStopButton.addEventListener("click", handleClick);
